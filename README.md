@@ -24,6 +24,8 @@ _Notes:_
 * _The purpose of this demo is to demonstrate AWS AI services. The code used is not for production._
 * _Tested in the N. Virginia region (us-east-1)._
 
+### Before start, clone or download the repository!
+
 ## CloudFormation
 1. Open the CloudFormation console at https://console.aws.amazon.com/cloudformation
 2. On the Welcome page, click on **Create stack** button
