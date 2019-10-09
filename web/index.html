@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>AI Bot</title>
+	<script src="https://sdk.amazonaws.com/js/aws-sdk-2.388.0.min.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="chatbot-area">
+			<div class="chatbot-header">
+				<ul>
+					<li>
+						<label for='user_file'>Upload file</label>
+						<input type="file" id='user_file'/>
+					</li>
+					<li>
+						<input type="button" value="&#9925" onclick="uploadContent()" />
+					</li>
+					<li>
+						<label>clean</label>
+					</li>
+					<li><input type="button" value="&#9898"
+							onclick="document.getElementById('conversation').innerHTML='';document.getElementById('wisdom').focus();" />
+					</li>
+				</ul>
+			</div>
+			<div class="chatbot-content">
+				<div id="conversation">
+				</div>
+			</div>
+			<div class="chatbot-footer">
+				<form id="chatform" onsubmit="return pushChat();">
+					<input type="text" id="wisdom" value="" placeholder="Write a message ...">
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" src="./js/cognito_script.js"></script>
+<script type="text/javascript" src="./js/lex_script.js"></script>
+<script type="text/javascript" src="./js/s3_script.js"></script>
+
+</html>

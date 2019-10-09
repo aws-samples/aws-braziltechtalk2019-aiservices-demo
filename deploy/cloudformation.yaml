@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AiBot demo CloudFormation template'
+
+Resources:
+  LambdaGodRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub 'lambda-god-role-${AWS::AccountId}'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/TranslateFullAccess
+        - arn:aws:iam::aws:policy/AmazonTranscribeFullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonTextractFullAccess
+        - arn:aws:iam::aws:policy/ComprehendFullAccess
+        - arn:aws:iam::aws:policy/AmazonRekognitionFullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonPollyFullAccess
+        - arn:aws:iam::aws:policy/AmazonLexFullAccess
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+  BucketS3:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ai-bot-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+  CognitoIdentityPoolId:
+    Type: 'AWS::Cognito::IdentityPool'
+    Properties:
+      AllowUnauthenticatedIdentities: True
+  CognitoRole:
+    DependsOn: CognitoIdentityPoolId
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub 'cognito-god-role-${AWS::AccountId}'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonLexFullAccess
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Federated:
+                - "cognito-identity.amazonaws.com"
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition: {"ForAnyValue:StringLike": {"cognito-identity.amazonaws.com:amr": "unauthenticated"}, "StringEquals": {"cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPoolId}}
+      Path: "/"
+  CognitoRoleAttach:
+    DependsOn: CognitoIdentityPoolId
+    Type: 'AWS::Cognito::IdentityPoolRoleAttachment'
+    Properties:
+      IdentityPoolId: !Ref CognitoIdentityPoolId
+      Roles: {"unauthenticated": !GetAtt CognitoRole.Arn}
+  DynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      BillingMode: 'PAY_PER_REQUEST'
+      TableName: "contents"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "content_id"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "content_id"
+          KeyType: "HASH"
+
+Outputs:
+  AccountId:
+    Description: Your account ID.
+    Value: !Sub '${AWS::AccountId}'
+  CognitoIdentityPoolId:
+    Description: Identity ID to access AWS resources.
+    Value: !Ref CognitoIdentityPoolId
+  S3BucketName:
+    Description: Bucket to store content.
+    Value: !Ref BucketS3
+  IAMRoleName:
+    Description: IAM Role for Lambda functions.
+    Value: !Ref LambdaGodRole
